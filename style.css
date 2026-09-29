@@ -1,1 +1,29 @@
-console.log("Merhaba Web Teknolojileri!");
+body {
+    background-color: #a580e8;
+    font-family: Arial, sans-serif;
+    color: #0000;
+    margin: 20px;
+}
+
+h1 {
+    color: #041B80;
+    text-align: center;
+}
+
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    gap: 15px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #3498db;
+    font-weight: bold;
+}
+
+nav a:hover {
+    color: #e74c3c;
+}
