@@ -1,15 +1,11 @@
 console.log("Kampüs Etkinlik Portalı JavaScript Dosyası Bağlandı!");
 
-// 1. Formu yakalayalım
 const etkinlikFormu = document.querySelector("form");
 
-// 2. Eğer form bu sayfada VARSA submit olayını dinleyelim
 if (etkinlikFormu) {
     etkinlikFormu.addEventListener("submit", function(event) {
-        // EN ÖNEMLİ SATIR: Sayfanın yenilenmesini EN BAŞTA engelliyoruz
         event.preventDefault(); 
         
-        // Form kutularını yakalayalım
         const etkinlikAdi = document.getElementById("etkinlik-adi");
         const etkinlikTarihi = document.getElementById("etkinlik-tarihi");
         const etkinlikAciklama = document.querySelector('textarea[name="aciklama"]');
@@ -20,42 +16,70 @@ if (etkinlikFormu) {
             ? etkinlikAciklama.value.trim() 
             : "Açıklama belirtilmedi.";
 
-        // FORM DOĞRULAMA (VALIDATION)
         if (adDegeri === "") {
             alert("⚠️ Lütfen Etkinlik Adı alanını boş bırakmayınız!");
             if (etkinlikAdi) etkinlikAdi.focus();
-            return; // Hata varsa kodu burada kes
+            return; 
         } 
         
         if (tarihDegeri === "") {
             alert("⚠️ Lütfen Etkinlik Tarihini seçiniz!");
             if (etkinlikTarihi) etkinlikTarihi.focus();
-            return; // Hata varsa kodu burada kes
+            return; 
         }
 
-        // =========================================================
-        // DİNAMİK HTML ELEMANI OLUŞTURMA (DOM MANIPULATION)
-        // =========================================================
+        const yeniEtkinlik = {
+            id: Date.now(),
+            ad: adDegeri,
+            tarih: tarihDegeri,
+            aciklama: aciklamaDegeri
+        };
+        etkinligiHafizayaKaydet(yeniEtkinlik);
+        yukluEtkinlikleriGoster();
+        alert("Etkinlik başarıyla kalıcı olarak kaydedildi");
+        etkinlikFormu.reset();
 
-        // A. Yeni bir <div> etiketi oluşturuyoruz
-        const yeniKart = document.createElement("div");
-        
-        // B. Bu div'e CSS'teki kart sınıfımızı veriyoruz
-        yeniKart.className = "card";
-        
-        // C. Kartın içini kullanıcının girdiği verilerle dolduruyoruz
-        yeniKart.innerHTML = `
-            <h3>🎉 Son Eklenen Etkinlik: ${adDegeri}</h3>
-            <p><strong>Tarih:</strong> ${tarihDegeri}</p>
-            <p><strong>Açıklama:</strong> ${aciklamaDegeri}</p>
-            <span style="color: #16a34a; font-weight: bold;">✓ Başarıyla Canlı Oluşturuldu</span>
-        `;
-
-        // D. Bu yeni kartı formun hemen altına ekliyoruz
-        etkinlikFormu.after(yeniKart);
-
-        // E. Başarı mesajı verip formu temizliyoruz
-        alert("✅ Etkinlik canlı olarak sayfaya eklendi!");
-        etkinlikFormu.reset(); // Form kutularını sıfırla
     });
+}
+
+function hafizadakiEtkinlikleriGetir(){
+   const kayitliVeri = localStorage.getItem("etkinlikler");
+    return kayitliVeri ? JSON.parse(kayitliVeri) : [];
+}
+function etkinligiHafizayaKaydet(etkinlik) {
+    const mevcutEtkinlikler = hafizadakiEtkinlikleriGetir();
+    mevcutEtkinlikler.push(etkinlik);
+    localStorage.setItem("etkinlikler", JSON.stringify(mevcutEtkinlikler));}
+
+    function yukluEtkinlikleriGoster() {
+    
+    let kartAlani = document.getElementById("eklenen-etkinlikler-alani");
+    
+    if (!kartAlani && etkinlikFormu) {
+        kartAlani = document.createElement("div");
+        kartAlani.id = "eklenen-etkinlikler-alani";
+        etkinlikFormu.after(kartAlani);
+    }
+
+    if (!kartAlani) return;
+
+    const liste = hafizadakiEtkinlikleriGetir();
+    kartAlani.innerHTML = "";
+
+    if (liste.length > 0) {
+        const baslik = document.createElement("h2");
+        baslik.innerText = "📌 Kaydedilen Etkinlikler (Kalıcı Hafıza)";
+        kartAlani.appendChild(baslik);
+
+        liste.forEach(function(etkinlik) {
+            const kart = document.createElement("div");
+            kart.className = "card";
+            kart.innerHTML = `
+                <h3>🎉 ${etkinlik.ad}</h3>
+                <p><strong>Tarih:</strong> ${etkinlik.tarih}</p>
+                <p><strong>Açıklama:</strong> ${etkinlik.aciklama}</p>
+            `;
+            kartAlani.appendChild(kart);
+        });
+    }
 }
