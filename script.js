@@ -27,5 +27,16 @@ if (etkinlikFormu) {
             alert("✅ Etkinlik başarıyla eklendi/güncellendi!");
         }
 
+const yeniKart = document.createElement("div");
+yeniKart.className = "card";
+yeniKart.innerHTML =`
+    <h3> Son Eklenen Etkinlik: ${adDegeri}</h3>
+    <p><strong>Tarih:</strong> ${tarihDegeri}</p>
+    <p><strong>Açıklama:</strong> ${aciklamaDegeri}</p>
+    <span style="color: green; font-weight: bold;">✓ Başarıyla Oluşturuldu</span>`;
+
+etkinlikFormu.after(yeniKart);
+alert("Etkinlik canlı olarak sayfaya eklendi!");
+etkinlikFormu.reset();
     });
 }
