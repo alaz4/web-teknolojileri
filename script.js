@@ -1,9 +1,9 @@
 console.log("Kampüs Etkinlik Portalı JavaScript Dosyası Bağlandı!");
 
-const kaydetButonu = document.querySelector(".btn-primary");
+const etkinlikFormu = document.querySelector("form");
 
-if (kaydetButonu) {
-    kaydetButonu.addEventListener("click", function(event) {
+if (etkinlikFormu) {
+    etkinlikFormu.addEventListener("submit", function(event) {
         
         const etkinlikAdi = document.getElementById("etkinlik-adi");
         const etkinlikTarihi = document.getElementById("etkinlik-tarihi");
@@ -11,15 +11,16 @@ if (kaydetButonu) {
         const adDegeri = etkinlikAdi ? etkinlikAdi.value.trim() : "";
         const tarihDegeri = etkinlikTarihi ? etkinlikTarihi.value : "";
 
+        
         if (adDegeri === "") {
             event.preventDefault();
             alert("⚠️ Lütfen Etkinlik Adı alanını boş bırakmayınız!");
-            if (etkinlikAdi) etkinlikAdi.focus();
+            etkinlikAdi.focus();
         } 
         else if (tarihDegeri === "") {
             event.preventDefault();
             alert("⚠️ Lütfen Etkinlik Tarihini seçiniz!");
-            if (etkinlikTarihi) etkinlikTarihi.focus();
+            etkinlikTarihi.focus();
         } 
         else {
             event.preventDefault();
