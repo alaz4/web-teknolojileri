@@ -1,11 +1,18 @@
 console.log("Kampüs Etkinlik Portalı JavaScript Dosyası Bağlandı!");
 
+// Sayfa ilk yüklendiğinde hafızada önceden kayıtlı etkinlik varsa ekrana bas
+window.onload = function() {
+    yukluEtkinlikleriEkranaBas();
+};
+
+// Formu yakalayalım
 const etkinlikFormu = document.querySelector("form");
 
 if (etkinlikFormu) {
     etkinlikFormu.addEventListener("submit", function(event) {
-        event.preventDefault(); 
+        event.preventDefault(); // Sayfa yenilenmesini engelle
         
+        // Form alanlarını oku
         const etkinlikAdi = document.getElementById("etkinlik-adi");
         const etkinlikTarihi = document.getElementById("etkinlik-tarihi");
         const etkinlikAciklama = document.querySelector('textarea[name="aciklama"]');
@@ -16,62 +23,69 @@ if (etkinlikFormu) {
             ? etkinlikAciklama.value.trim() 
             : "Açıklama belirtilmedi.";
 
+        // Form Doğrulama Kontrolleri
         if (adDegeri === "") {
             alert("⚠️ Lütfen Etkinlik Adı alanını boş bırakmayınız!");
             if (etkinlikAdi) etkinlikAdi.focus();
-            return; 
+            return;
         } 
         
         if (tarihDegeri === "") {
             alert("⚠️ Lütfen Etkinlik Tarihini seçiniz!");
             if (etkinlikTarihi) etkinlikTarihi.focus();
-            return; 
+            return;
         }
 
+        // 1. YENİ ETKİNLİK NESNESİ (OBJECT)
         const yeniEtkinlik = {
-            id: Date.now(),
             ad: adDegeri,
             tarih: tarihDegeri,
             aciklama: aciklamaDegeri
         };
-        etkinligiHafizayaKaydet(yeniEtkinlik);
-        yukluEtkinlikleriGoster();
-        alert("Etkinlik başarıyla kalıcı olarak kaydedildi");
-        etkinlikFormu.reset();
 
+        // 2. HAFIZADAKİ MEVCUT LİSTEYİ AL
+        let kayitliEtkinlikler = JSON.parse(localStorage.getItem("etkinlikler")) || [];
+
+        // 3. YENİ ETKİNLİĞİ DİZİYE EKLE
+        kayitliEtkinlikler.push(yeniEtkinlik);
+
+        // 4. GÜNCEL LİSTEYİ TARAYICI HAFIZASINA (LOCALSTORAGE) YAZ
+        localStorage.setItem("etkinlikler", JSON.stringify(kayitliEtkinlikler));
+
+        // 5. EKRANI GÜNCELLE VE FORMU TEMİZLE
+        yukluEtkinlikleriEkranaBas();
+        alert("✅ Etkinlik kalıcı olarak kaydedildi!");
+        etkinlikFormu.reset();
     });
 }
 
-function hafizadakiEtkinlikleriGetir(){
-   const kayitliVeri = localStorage.getItem("etkinlikler");
-    return kayitliVeri ? JSON.parse(kayitliVeri) : [];
-}
-function etkinligiHafizayaKaydet(etkinlik) {
-    const mevcutEtkinlikler = hafizadakiEtkinlikleriGetir();
-    mevcutEtkinlikler.push(etkinlik);
-    localStorage.setItem("etkinlikler", JSON.stringify(mevcutEtkinlikler));}
+// TARAYICI HAFIZASINDAKİ VERİLERİ OKUYUP EKRANA KART OLARAK ÇİZEN FONKSİYON
+function yukluEtkinlikleriEkranaBas() {
+    const formEl = document.querySelector("form");
+    if (!formEl) return;
 
-    function yukluEtkinlikleriGoster() {
-    
-    let kartAlani = document.getElementById("eklenen-etkinlikler-alani");
-    
-    if (!kartAlani && etkinlikFormu) {
-        kartAlani = document.createElement("div");
-        kartAlani.id = "eklenen-etkinlikler-alani";
-        etkinlikFormu.after(kartAlani);
+    // Varsa eski konteyneri bul veya sıfırdan oluştur
+    let listeAlani = document.getElementById("liste-alani");
+    if (!listeAlani) {
+        listeAlani = document.createElement("div");
+        listeAlani.id = "liste-alani";
+        formEl.after(listeAlani);
     }
 
-    if (!kartAlani) return;
+    // Hafızadan oku
+    const kayitliEtkinlikler = JSON.parse(localStorage.getItem("etkinlikler")) || [];
 
-    const liste = hafizadakiEtkinlikleriGetir();
-    kartAlani.innerHTML = "";
+    // İçini temizle ki üst üste birmesin
+    listeAlani.innerHTML = "";
 
-    if (liste.length > 0) {
+    if (kayitliEtkinlikler.length > 0) {
         const baslik = document.createElement("h2");
-        baslik.innerText = "📌 Kaydedilen Etkinlikler (Kalıcı Hafıza)";
-        kartAlani.appendChild(baslik);
+        baslik.innerText = "📌 Kayıtlı Etkinlikler (Hafızadan Okunan)";
+        baslik.style.marginTop = "20px";
+        listeAlani.appendChild(baslik);
 
-        liste.forEach(function(etkinlik) {
+        // Her bir etkinliği karta dönüştür
+        kayitliEtkinlikler.forEach(function(etkinlik) {
             const kart = document.createElement("div");
             kart.className = "card";
             kart.innerHTML = `
@@ -79,7 +93,7 @@ function etkinligiHafizayaKaydet(etkinlik) {
                 <p><strong>Tarih:</strong> ${etkinlik.tarih}</p>
                 <p><strong>Açıklama:</strong> ${etkinlik.aciklama}</p>
             `;
-            kartAlani.appendChild(kart);
+            listeAlani.appendChild(kart);
         });
     }
 }
