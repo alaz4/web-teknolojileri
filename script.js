@@ -1,8 +1,9 @@
 console.log("Kampüs Etkinlik Portalı JavaScript Dosyası Bağlandı!");
 
-// Sayfa yüklendiğinde hafızadaki etkinlikleri ekrana bas
+// Sayfa ilk yüklendiğinde çalışacak fonksiyonlar
 window.onload = function() {
-    yukluEtkinlikleriEkranaBas();
+    yukluEtkinlikleriEkranaBas();   // Etkinlik Ekle sayfasındaki liste
+    etkinliklerSayfasiniYukle();  // Etkinlikler.html sayfasındaki liste
 };
 
 const etkinlikFormu = document.querySelector("form");
@@ -37,7 +38,7 @@ if (etkinlikFormu) {
 
         // 1. BENZERSİZ ID İLE ETKİNLİK NESNESİ (OBJECT)
         const yeniEtkinlik = {
-            id: Date.now(), // Benzersiz kimlik (ms cinsinden zaman)
+            id: Date.now(),
             ad: adDegeri,
             tarih: tarihDegeri,
             aciklama: aciklamaDegeri
@@ -55,7 +56,7 @@ if (etkinlikFormu) {
     });
 }
 
-// HAFIZADAKİ ETKİNLİKLERİ EKRANA ÇİZEN VE SİL BUTONU EKLEYEN FONKSİYON
+// ETKİNLİK EKLE SAYFASINDAKİ LİSTELEME
 function yukluEtkinlikleriEkranaBas() {
     const formEl = document.querySelector("form");
     if (!formEl) return;
@@ -79,7 +80,6 @@ function yukluEtkinlikleriEkranaBas() {
         kayitliEtkinlikler.forEach(function(etkinlik) {
             const kart = document.createElement("div");
             kart.className = "card";
-            kart.style.position = "relative"; // Sil butonu konumlandırması için
             
             kart.innerHTML = `
                 <h3>🎉 ${etkinlik.ad}</h3>
@@ -94,20 +94,48 @@ function yukluEtkinlikleriEkranaBas() {
     }
 }
 
-// ETKİNLİK SİLME FONKSİYONU (Array.filter Kullanımı)
+// ETKİNLİK SİLME FONKSİYONU
 function etkinlikSil(id) {
     if (confirm("Bu etkinliği silmek istediğinizden emin misiniz?")) {
         let kayitliEtkinlikler = JSON.parse(localStorage.getItem("etkinlikler")) || [];
         
-        // Tıklanan id dışındaki tüm etkinlikleri filtrele (seç ve tut)
         kayitliEtkinlikler = kayitliEtkinlikler.filter(function(etkinlik) {
             return etkinlik.id !== id;
         });
 
-        // Güncellenmiş listeyi localStorage'a geri yaz
         localStorage.setItem("etkinlikler", JSON.stringify(kayitliEtkinlikler));
 
-        // Ekranı güncelle
+        // İki sayfadaki listeyi de yenile
         yukluEtkinlikleriEkranaBas();
+        etkinliklerSayfasiniYukle();
+    }
+}
+
+// =========================================================
+// 🌟 YENİ EKLENEN: ETKİNLİKLER.HTML SAYFASINDA LİSTELEME
+// =========================================================
+function etkinliklerSayfasiniYukle() {
+    const tumEtkinliklerAlani = document.getElementById("tum-etkinlikler-alani");
+    if (!tumEtkinliklerAlani) return; // Eğer etkinlikler.html sayfasında değilsek susar
+
+    const kayitliEtkinlikler = JSON.parse(localStorage.getItem("etkinlikler")) || [];
+    tumEtkinliklerAlani.innerHTML = "";
+
+    if (kayitliEtkinlikler.length === 0) {
+        tumEtkinliklerAlani.innerHTML = "<p><em>Henüz eklenmiş bir etkinlik bulunmuyor. Etkinlik Ekle sayfasından yeni etkinlik ekleyebilirsiniz.</em></p>";
+    } else {
+        kayitliEtkinlikler.forEach(function(etkinlik) {
+            const kart = document.createElement("div");
+            kart.className = "card";
+            kart.innerHTML = `
+                <h3>🎉 ${etkinlik.ad}</h3>
+                <p><strong>Tarih:</strong> ${etkinlik.tarih}</p>
+                <p><strong>Açıklama:</strong> ${etkinlik.aciklama}</p>
+                <button onclick="etkinlikSil(${etkinlik.id})" style="background-color: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 8px;">
+                    🗑️ Etkinliği Sil
+                </button>
+            `;
+            tumEtkinliklerAlani.appendChild(kart);
+        });
     }
 }
