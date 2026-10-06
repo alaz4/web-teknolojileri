@@ -1,21 +1,29 @@
+console.log("Kampüs Etkinlik Portalı JavaScript Dosyası Bağlandı!");
+
 const kaydetButonu = document.querySelector(".btn-primary");
-if(kaydetButonu){
-    kaydetButonu.addEventListener("click", function(event){
-        const etkinlikAdi = document.querySelector('input[type="text"]');
-        const etkinlikTarihi = document.querySelector('input[type="data"]');
-        if (etkinlikAdi && etkinlikAdi.value.trim() == ""){
+
+if (kaydetButonu) {
+    kaydetButonu.addEventListener("click", function(event) {
+        
+        const etkinlikAdi = document.getElementById("etkinlik-adi");
+        const etkinlikTarihi = document.getElementById("etkinlik-tarihi");
+
+        const adDegeri = etkinlikAdi ? etkinlikAdi.value.trim() : "";
+        const tarihDegeri = etkinlikTarihi ? etkinlikTarihi.value : "";
+
+        if (adDegeri === "") {
             event.preventDefault();
-            alert("⚠️ Lütfen Etkinlik Adı alanını boş bırakmayınız!")
-            etkinlikAdi.focus();
-        }
-        else if (etkinlikTarihi && etkinlikTarihi.value.trim() == ""){
+            alert("⚠️ Lütfen Etkinlik Adı alanını boş bırakmayınız!");
+            if (etkinlikAdi) etkinlikAdi.focus();
+        } 
+        else if (tarihDegeri === "") {
             event.preventDefault();
             alert("⚠️ Lütfen Etkinlik Tarihini seçiniz!");
-            etkinlikTarihi.focus();
-        }
-        else{
+            if (etkinlikTarihi) etkinlikTarihi.focus();
+        } 
+        else {
             event.preventDefault();
-            alert("✅ Etkinlik başarıyla eklendi/güncellendi!")
+            alert("✅ Etkinlik başarıyla eklendi/güncellendi!");
         }
 
     });
