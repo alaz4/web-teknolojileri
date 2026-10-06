@@ -1,18 +1,17 @@
 console.log("Kampüs Etkinlik Portalı JavaScript Dosyası Bağlandı!");
 
-// Sayfa ilk yüklendiğinde hafızada önceden kayıtlı etkinlik varsa ekrana bas
+// Sayfa yüklendiğinde hafızadaki etkinlikleri ekrana bas
 window.onload = function() {
     yukluEtkinlikleriEkranaBas();
 };
 
-// Formu yakalayalım
 const etkinlikFormu = document.querySelector("form");
 
 if (etkinlikFormu) {
     etkinlikFormu.addEventListener("submit", function(event) {
         event.preventDefault(); // Sayfa yenilenmesini engelle
         
-        // Form alanlarını oku
+        // Input alanlarını oku
         const etkinlikAdi = document.getElementById("etkinlik-adi");
         const etkinlikTarihi = document.getElementById("etkinlik-tarihi");
         const etkinlikAciklama = document.querySelector('textarea[name="aciklama"]');
@@ -36,35 +35,31 @@ if (etkinlikFormu) {
             return;
         }
 
-        // 1. YENİ ETKİNLİK NESNESİ (OBJECT)
+        // 1. BENZERSİZ ID İLE ETKİNLİK NESNESİ (OBJECT)
         const yeniEtkinlik = {
+            id: Date.now(), // Benzersiz kimlik (ms cinsinden zaman)
             ad: adDegeri,
             tarih: tarihDegeri,
             aciklama: aciklamaDegeri
         };
 
-        // 2. HAFIZADAKİ MEVCUT LİSTEYİ AL
+        // 2. HAFIZAYA KAYDET
         let kayitliEtkinlikler = JSON.parse(localStorage.getItem("etkinlikler")) || [];
-
-        // 3. YENİ ETKİNLİĞİ DİZİYE EKLE
         kayitliEtkinlikler.push(yeniEtkinlik);
-
-        // 4. GÜNCEL LİSTEYİ TARAYICI HAFIZASINA (LOCALSTORAGE) YAZ
         localStorage.setItem("etkinlikler", JSON.stringify(kayitliEtkinlikler));
 
-        // 5. EKRANI GÜNCELLE VE FORMU TEMİZLE
+        // 3. EKRANI GÜNCELLE VE FORMU TEMİZLE
         yukluEtkinlikleriEkranaBas();
         alert("✅ Etkinlik kalıcı olarak kaydedildi!");
         etkinlikFormu.reset();
     });
 }
 
-// TARAYICI HAFIZASINDAKİ VERİLERİ OKUYUP EKRANA KART OLARAK ÇİZEN FONKSİYON
+// HAFIZADAKİ ETKİNLİKLERİ EKRANA ÇİZEN VE SİL BUTONU EKLEYEN FONKSİYON
 function yukluEtkinlikleriEkranaBas() {
     const formEl = document.querySelector("form");
     if (!formEl) return;
 
-    // Varsa eski konteyneri bul veya sıfırdan oluştur
     let listeAlani = document.getElementById("liste-alani");
     if (!listeAlani) {
         listeAlani = document.createElement("div");
@@ -72,10 +67,7 @@ function yukluEtkinlikleriEkranaBas() {
         formEl.after(listeAlani);
     }
 
-    // Hafızadan oku
     const kayitliEtkinlikler = JSON.parse(localStorage.getItem("etkinlikler")) || [];
-
-    // İçini temizle ki üst üste birmesin
     listeAlani.innerHTML = "";
 
     if (kayitliEtkinlikler.length > 0) {
@@ -84,16 +76,38 @@ function yukluEtkinlikleriEkranaBas() {
         baslik.style.marginTop = "20px";
         listeAlani.appendChild(baslik);
 
-        // Her bir etkinliği karta dönüştür
         kayitliEtkinlikler.forEach(function(etkinlik) {
             const kart = document.createElement("div");
             kart.className = "card";
+            kart.style.position = "relative"; // Sil butonu konumlandırması için
+            
             kart.innerHTML = `
                 <h3>🎉 ${etkinlik.ad}</h3>
                 <p><strong>Tarih:</strong> ${etkinlik.tarih}</p>
                 <p><strong>Açıklama:</strong> ${etkinlik.aciklama}</p>
+                <button onclick="etkinlikSil(${etkinlik.id})" style="background-color: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 8px;">
+                    🗑️ Etkinliği Sil
+                </button>
             `;
             listeAlani.appendChild(kart);
         });
+    }
+}
+
+// ETKİNLİK SİLME FONKSİYONU (Array.filter Kullanımı)
+function etkinlikSil(id) {
+    if (confirm("Bu etkinliği silmek istediğinizden emin misiniz?")) {
+        let kayitliEtkinlikler = JSON.parse(localStorage.getItem("etkinlikler")) || [];
+        
+        // Tıklanan id dışındaki tüm etkinlikleri filtrele (seç ve tut)
+        kayitliEtkinlikler = kayitliEtkinlikler.filter(function(etkinlik) {
+            return etkinlik.id !== id;
+        });
+
+        // Güncellenmiş listeyi localStorage'a geri yaz
+        localStorage.setItem("etkinlikler", JSON.stringify(kayitliEtkinlikler));
+
+        // Ekranı güncelle
+        yukluEtkinlikleriEkranaBas();
     }
 }
