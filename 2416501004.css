@@ -222,3 +222,31 @@ img {
         align-items: center;
     }
 }
+/* Form Doğrulama Stilleri */
+.hata-mesaji {
+    color: #dc2626;
+    font-size: 13px;
+    margin-top: 4px;
+    display: block;
+}
+
+[aria-invalid="true"] {
+    border-color: #dc2626 !important;
+    background-color: #fef2f2;
+}
+
+.basari-kutusu {
+    background-color: #f0fdf4;
+    border: 1px solid #16a34a;
+    color: #15803d;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.hata-kutusu {
+    background-color: #fef2f2;
+    border: 1px solid #dc2626;
+    color: #991b1b;
+    padding: 15px;
+    border-radius: 8px;
+}

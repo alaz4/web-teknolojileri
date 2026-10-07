@@ -3,7 +3,8 @@ import { events } from "./data.js";
 const listContainer = document.querySelector("#etkinlik-listesi");
 const aramaInput = document.querySelector("#arama");
 const kategoriSelect = document.querySelector("#kategori-filtre");
-const sonucText = document.querySelector("#sonuc");
+const sonucSatiri = document.querySelector("#sonuc");
+const filtreFormu = document.querySelector("#filtre-formu");
 
 // 1. Tarihi "12 Ekim 2026" formatına dönüştüren fonksiyon
 function tarihFormatla(tarihStr) {
@@ -30,7 +31,7 @@ function createCard(event) {
 
     return `
         <article class="card">
-            <h2>${event.title}</h2>
+            2. ${event.title}</h2>
             <p><strong>Kategori:</strong> ${event.category}</p>
             <p><strong>Tarih:</strong> ${okunabilirTarih} - ${event.time}</p>
             <p><strong>Mekan:</strong> ${event.location}</p>
@@ -40,7 +41,7 @@ function createCard(event) {
     `;
 }
 
-// 3. Kartları ekrana basan ve sonuç sayısını yazdıran fonksiyon
+// 3. Kartları ekrana basan fonksiyon
 function render(dizi) {
     if (!listContainer) return;
 
@@ -49,20 +50,14 @@ function render(dizi) {
     } else {
         listContainer.innerHTML = dizi.map(createCard).join("");
     }
-
-    // Sonuc metnini güncelle (örneğin: "6 etkinlik listeleniyor.")
-    if (sonucText) {
-        sonucText.innerText = `${dizi.length} etkinlik listeleniyor.`;
-    }
 }
 
-// 4. Kategori Seçim Kutusu İçi Dinamik Doldurma (Set Kullanımı)
-function kategorileriDoldur() {
+// 4. Kategori seçeneklerini veriden üret (new Set)
+function kategorileriYukle() {
     if (!kategoriSelect) return;
-    
-    // data.js içindeki benzersiz kategorileri alıyoruz
+
     const kategoriler = [...new Set(events.map(e => e.category))];
-    
+
     kategoriler.forEach(kategori => {
         const option = document.createElement("option");
         option.value = kategori;
@@ -71,31 +66,39 @@ function kategorileriDoldur() {
     });
 }
 
-// 5. Canlı Filtreleme Fonksiyonu (Arama + Kategori)
+// 5. Canlı Filtreleme Fonksiyonu
 function filtrele() {
-    const aramaMetni = aramaInput ? aramaInput.value.toLowerCase().trim() : "";
+    // Türkçe karakter duyarlı küçük harf dönüşümü
+    const aranan = aramaInput ? aramaInput.value.toLocaleLowerCase("tr-TR").trim() : "";
     const secilenKategori = kategoriSelect ? kategoriSelect.value : "";
 
-    const filtrelenmis = events.filter(event => {
-        // Arama metni başlıkta, açıklamada veya mekanda geçiyor mu?
-        const metineUyuyor = 
-            event.title.toLowerCase().includes(aramaMetni) ||
-            event.description.toLowerCase().includes(aramaMetni) ||
-            event.location.toLowerCase().includes(aramaMetni);
+    const sonuc = events.filter(e => {
+        const metinUyuyor = 
+            e.title.toLocaleLowerCase("tr-TR").includes(aranan) ||
+            e.description.toLocaleLowerCase("tr-TR").includes(aranan) ||
+            e.location.toLocaleLowerCase("tr-TR").includes(aranan);
 
-        // Kategori seçimi uyuyor mu?
-        const kategoriyeUyuyor = secilenKategori === "" || event.category === secilenKategori;
+        const kategoriUyuyor = secilenKategori === "" || e.category === secilenKategori;
 
-        return metineUyuyor && kategoriyeUyuyor;
+        return metinUyuyor && kategoriUyuyor;
     });
 
-    render(filtrelenmis);
+    render(sonuc);
+
+    // Sonuç sayısını yazdır
+    if (sonucSatiri) {
+        if (sonuc.length === 0) {
+            sonucSatiri.textContent = "Hiç etkinlik bulunamadı.";
+        } else {
+            sonucSatiri.textContent = `${sonuc.length} etkinlik listeleniyor.`;
+        }
+    }
 }
 
-// 6. Sayfa Yüklendiğinde Olay Dinleyicilerini Bağlama
+// 6. Başlatıcı ve Olay Dinleyicileri (Event Listeners)
 if (listContainer) {
     if (listContainer.dataset && listContainer.dataset.limit) {
-        // Ana Sayfa için (sadece yaklasan 2 etkinlik)
+        // Ana Sayfa (sadece data-limit kadar göster)
         const limit = Number(listContainer.dataset.limit);
         const yaklasan = [...events]
             .sort((a, b) => a.date.localeCompare(b.date))
@@ -103,11 +106,20 @@ if (listContainer) {
         
         render(yaklasan);
     } else {
-        // Etkinlikler Sayfası için (Filtreleme Aktif)
-        kategorileriDoldur();
+        // Etkinlikler Sayfası (Filtreleme Aktif)
+        kategorileriYukle();
         render(events);
 
-        // Arama kutusuna her harf yazıldığında veya silindiğinde filtrelersin
+        if (sonucSatiri) {
+            sonucSatiri.textContent = `${events.length} etkinlik listeleniyor.`;
+        }
+
+        // Enter'a basıldığında formun sayfayı yenilemesini engelle
+        if (filtreFormu) {
+            filtreFormu.addEventListener("submit", (e) => e.preventDefault());
+        }
+
+        // Olay Dinleyicileri
         if (aramaInput) aramaInput.addEventListener("input", filtrele);
         if (kategoriSelect) kategoriSelect.addEventListener("change", filtrele);
     }
