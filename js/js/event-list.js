@@ -1,11 +1,9 @@
-// 1. data.js'den etkinlik verilerini alıyoruz
 import { events } from "./data.js";
 
-// 2. Sayfadaki container'ı (section) buluyoruz
 const listContainer = document.querySelector("#etkinlik-listesi");
 
-// 3. Tarihi "12 Ekim 2026" formatına dönüştüren yardımcı fonksiyon
 function tarihFormatla(tarihStr) {
+    if (!tarihStr) return "";
     const parcalar = tarihStr.split("-");
     if (parcalar.length === 3) {
         const gun = parcalar[0];
@@ -22,7 +20,6 @@ function tarihFormatla(tarihStr) {
     return tarihStr;
 }
 
-// 4. Tek bir etkinlik nesnesinden HTML kartı üreten fonksiyon
 function createCard(event) {
     const okunabilirTarih = tarihFormatla(event.date);
 
@@ -38,23 +35,23 @@ function createCard(event) {
     `;
 }
 
-// 5. Dizideki etkinlikleri ekrana çizen fonksiyon
 function render(dizi) {
     if (!listContainer) return;
     listContainer.innerHTML = dizi.map(createCard).join("");
 }
 
-// 6. ADIM 5 AKIŞI: Sayfa yüklendiğinde çalışacak mantık
+// Sayfa yüklendiğinde çalışacak ana kontrol
 if (listContainer) {
-    if (listContainer.dataset.limit) {
-        // Eğer data-limit="2" varsa (Ana Sayfa)
+    if (listContainer.dataset && listContainer.dataset.limit) {
+        // Ana Sayfa için (data-limit var ise)
+        const limit = Number(listContainer.dataset.limit);
         const yaklasan = [...events]
             .sort((a, b) => a.date.localeCompare(b.date))
-            .slice(0, Number(listContainer.dataset.limit));
+            .slice(0, limit);
         
         render(yaklasan);
     } else {
-        // Limit yoksa tüm liste gösterilsin (Etkinlikler Sayfası)
+        // Etkinlikler Sayfası için (data-limit yok ise)
         render(events);
     }
 }
