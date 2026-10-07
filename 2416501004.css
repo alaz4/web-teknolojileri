@@ -184,3 +184,41 @@ img {
         white-space: nowrap;
     }
 }
+/* Filtre Formu Stilleri */
+.filtre {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+    background-color: #f8fafc;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.filtre label {
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.filtre input, 
+.filtre select {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+#sonuc {
+    font-weight: bold;
+    color: #1e293b;
+    margin-bottom: 15px;
+}
+
+/* Geniş Ekran (Masaüstü) Düzeni */
+@media (min-width: 768px) {
+    .filtre {
+        grid-template-columns: auto 1fr auto 1fr;
+        align-items: center;
+    }
+}
