@@ -4,21 +4,20 @@ const form = document.querySelector("#etkinlik-formu");
 const formMesaj = document.querySelector("#form-mesaj");
 
 if (form) {
-    // =========================================================
-    // ADIM 11: Güncelleme Modu Kontrolü ve Formu Doldurma
-    // =========================================================
+    // URL'den id parametresini okuyoruz
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get("id");
 
-    if (form.dataset.mode === "guncelle") {
+    // =========================================================
+    // MOD KONTROLÜ: EĞER ID VARSA FORMU DOLDUR (GÜNCELLEME MODU)
+    // =========================================================
+    if (id) {
         const etkinlik = events.find(e => e.id === id);
 
         if (etkinlik) {
-            // Etkinlik bulunduysa form alanlarını doldur
             form.elements.ad.value = etkinlik.title;
             form.elements.kategori.value = etkinlik.category;
             
-            // Tarih GG-AA-YYYY formatından YYYY-MM-DD (input date) formatına çevrilir
             if (etkinlik.date && etkinlik.date.includes("-")) {
                 const parts = etkinlik.date.split("-");
                 if (parts.length === 3) {
@@ -30,27 +29,20 @@ if (form) {
             form.elements.mekan.value = etkinlik.location;
             form.elements.kontenjan.value = etkinlik.capacity;
             form.elements.aciklama.value = etkinlik.description;
-        } else {
-            // Etkinlik bulunamazsa veya id adreste yoksa formu gizle ve uyarı göster
-            form.outerHTML = `
-                <div class="hata-kutusu" style="margin-top: 20px;">
-                    <h2>⚠️ Geçersiz Erişim veya Etkinlik Bulunamadı</h2>
-                    <p>Güncellemek istediğiniz etkinlik bulunamadı. Lütfen detay sayfasındaki "Güncelle" bağlantısını kullanınız.</p>
-                    <br>
-                    <a href="etkinlikler.html" class="btn-detail">← Etkinliklere Git</a>
-                </div>
-            `;
-            // Form gizlendiği için aşağıdaki submit event listener bağlanmayacak
+
+            // Başlığı Güncelle olarak değiştir
+            const baslik = document.querySelector("h1");
+            if (baslik) baslik.textContent = "Etkinlik Güncelle";
         }
     }
 
     // =========================================================
-    // Form Gönderimi (Submit & Validation)
+    // FORM GÖNDERİMİ (EKLEME & GÜNCELLEME ORTAK DOĞRULAMA)
     // =========================================================
     form.addEventListener("submit", (e) => {
         e.preventDefault();
 
-        // Hata alanlarını temizle
+        // 1. Önceki Hataları Temizle
         const tumHataSpanlari = form.querySelectorAll(".hata-mesaji");
         tumHataSpanlari.forEach(span => span.textContent = "");
 
@@ -59,6 +51,7 @@ if (form) {
 
         if (formMesaj) formMesaj.innerHTML = "";
 
+        // 2. Form Verilerini Oku
         const fd = new FormData(form);
 
         const rawDate = fd.get("tarih") || "";
@@ -81,16 +74,17 @@ if (form) {
             capacity: Number(fd.get("kontenjan")) || 0
         };
 
-        // Doğrulama kuralları
+        // 3. Doğrulama Kuralları (Adım 10)
         const errors = {};
 
-        if (data.title.length < 3) errors.ad = "Etkinlik adı en az 3 karakter olmalı.";
-        if (!data.category) errors.kategori = "Lütfen bir kategori seçiniz.";
+        if (data.title.length < 3) errors.ad = "En az 3 karakter olmalı.";
+        if (!data.category) errors.kategori = "Kategori seçilmeli.";
         if (!fd.get("tarih")) errors.tarih = "Tarih alanı boş bırakılamaz.";
         if (!data.time) errors.saat = "Saat alanı boş bırakılamaz.";
         if (!data.location) errors.mekan = "Mekan alanı boş bırakılamaz.";
-        if (data.capacity < 1 || data.capacity > 1000) errors.kontenjan = "Kontenjan 1 ile 1000 arasında olmalıdır.";
+        if (data.capacity < 1 || data.capacity > 1000) errors.kontenjan = "Kontenjan 1-1000 arasında olmalı.";
 
+        // 4. Hata Varsa Göster
         const hataAlanlari = Object.keys(errors);
 
         if (hataAlanlari.length > 0) {
@@ -112,12 +106,14 @@ if (form) {
             return;
         }
 
+        // 5. Hata Yoksa Başarılı Gönderim Kutusu (JSON Gösterimi - Slayt Çıktısı)
+        const islemTipi = id ? "Güncellendi" : "Oluşturuldu";
+
         if (formMesaj) {
             formMesaj.innerHTML = `
                 <div class="basari-kutusu">
-                    <h3>✅ Form Başarıyla Güncellendi!</h3>
-                    <p>Güncellenen Etkinlik Nesnesi (JSON):</p>
-                    <pre style="background: #1e293b; color: #f8fafc; padding: 10px; border-radius: 6px; overflow-x: auto;">${JSON.stringify(data, null, 2)}</pre>
+                    <p style="margin-bottom: 10px; font-weight: bold;">Etkinlik başarıyla ${islemTipi.toLowerCase()}! Bu aşamada form veri kaydetmez; sonuç aşağıda gösterilir.</p>
+                    <pre style="background: #1e293b; color: #f8fafc; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: monospace;">${JSON.stringify(data, null, 2)}</pre>
                 </div>
             `;
         }
